@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
-namespace GameUtil
+namespace GameLib.Util
 {
 	public class SceneLoader : MonoBehaviour
 	{
@@ -13,7 +14,7 @@ namespace GameUtil
 		[SerializeField] SceneObject mainScene;
 		
 
-		[System.Serializable]
+		[Serializable]
 		public class SceneLevel
 		{
 			public string parentLevelName;

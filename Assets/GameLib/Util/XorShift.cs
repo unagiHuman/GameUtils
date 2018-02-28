@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-namespace Production {
+namespace GameLib.Util
+ {
 	class XorShift{
 		private IEnumerator<uint> r;
 		public static readonly Dictionary<string,uint> defaults=new Dictionary<string,uint>(){
