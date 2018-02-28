@@ -8,8 +8,9 @@ using System.Linq;
 namespace GameLib.System
 {
 
-    public class CoroutineTask 
+    public class CoroutineTask
     {
+
 
         enum State
         {
@@ -17,6 +18,18 @@ namespace GameLib.System
             RUN,
             TERMINATE,
             PAUSE,
+        }
+
+
+        public Action<int> finishCoroutineCallback;
+
+
+        public int id
+        {
+            get
+            {
+                return _coroutineId;
+            }
         }
 
 
@@ -29,12 +42,16 @@ namespace GameLib.System
         MonoBehaviour _mb;
 
 
-        public CoroutineTask(MonoBehaviour mb, IEnumerator task)
+        int _coroutineId = 0;
+
+
+        public CoroutineTask(MonoBehaviour mb, IEnumerator task, int id)
         {
-            _state = State.NONE;
+            this._state = State.NONE;
             this._coroutine = task;
             this._mb = mb;
             this._nested = Wrapper();
+            this._coroutineId = id;
         }
 
 
@@ -48,13 +65,13 @@ namespace GameLib.System
 
         public void Pause()
         {
-            _state = State.PAUSE;
+            if (_state == State.RUN) _state = State.PAUSE;
         }
 
 
         public void Resume()
         {
-            _state = State.RUN;
+            if (_state == State.PAUSE) _state = State.RUN;
         }
 
 
@@ -85,14 +102,14 @@ namespace GameLib.System
         private IEnumerator MoveNext(IEnumerator task)
         {
 
-            if(_state == State.RUN)
+            if (_state == State.RUN)
             {
                 if (task.MoveNext())
                 {
                     var child = task.Current;
-                    
 
-                    if(child == null)
+
+                    if (child == null)
                     {
                         yield return null;
                     }
@@ -106,7 +123,7 @@ namespace GameLib.System
 
                                 var ie = MoveNext((IEnumerator)child);
                                 yield return ie;
-                                if(ie.Current is bool)
+                                if (ie.Current is bool)
                                 {
                                     if (!(bool)ie.Current)
                                     {
@@ -135,7 +152,7 @@ namespace GameLib.System
                             }
                         }
                     }
-                   
+
                 }
                 else
                 {
@@ -150,7 +167,7 @@ namespace GameLib.System
             {
                 yield return false;
             }
-          
+
         }
 
 
@@ -160,18 +177,11 @@ namespace GameLib.System
             {
                 yield return null;
             }
+            if (finishCoroutineCallback != null)
+            {
+                finishCoroutineCallback(_coroutineId);
+            }
         }
 
-
-      
-    }
-
-
-    public static class MonoBehaviourCoroutineExtension
-    {
-        public static CoroutineTask StartCoroutineTask(this MonoBehaviour mb, IEnumerator task)
-        {
-            return new CoroutineTask(mb, task);
-        }
     }
 }
