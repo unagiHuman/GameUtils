@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Linq;
+using UniRx;
+using UniRx.Triggers;
 
 
 namespace GameLib.System
@@ -21,7 +23,7 @@ namespace GameLib.System
         }
 
 
-        public Action<int> finishCoroutineCallback;
+        public Action<MonoBehaviour, int> finishCoroutineCallback;
 
 
         public int id
@@ -52,14 +54,24 @@ namespace GameLib.System
             this._mb = mb;
             this._nested = Wrapper();
             this._coroutineId = id;
+
+
+            mb.OnDestroyAsObservable().Subscribe(prop =>
+            {
+                _state = State.TERMINATE;
+                if (finishCoroutineCallback != null)
+                {
+                    finishCoroutineCallback(this._mb, this._coroutineId);
+                }
+            });
         }
 
 
-        public Coroutine StartCoroutine()
+        public void StartCoroutine()
         {
             _state = State.RUN;
             _mb.StartCoroutine(_nested);
-            return _mb.StartCoroutine(Wait());
+            _mb.StartCoroutine(Wait());
         }
 
 
@@ -134,7 +146,9 @@ namespace GameLib.System
                         }
                         else if (type == typeof(Coroutine))
                         {
-                            Debug.LogWarning("Not Support Nest StartCoroutine");
+
+                            yield return child;
+                            // Debug.LogWarning("Not Support Nest StartCoroutine in " + this._mb.name);
                         }
                         else
                         {
@@ -179,7 +193,7 @@ namespace GameLib.System
             }
             if (finishCoroutineCallback != null)
             {
-                finishCoroutineCallback(_coroutineId);
+                finishCoroutineCallback(this._mb, this._coroutineId);
             }
         }
 
