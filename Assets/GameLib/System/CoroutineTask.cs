@@ -120,7 +120,6 @@ namespace GameLib.System
                 {
                     var child = task.Current;
 
-
                     if (child == null)
                     {
                         yield return null;
@@ -148,22 +147,10 @@ namespace GameLib.System
                         {
 
                             yield return child;
-                            // Debug.LogWarning("Not Support Nest StartCoroutine in " + this._mb.name);
                         }
                         else
                         {
-                            if (_state == State.RUN)
-                            {
-                                yield return child;
-                            }
-                            else if (_state == State.PAUSE)
-                            {
-                                yield return null;
-                            }
-                            else
-                            {
-                                yield return false;
-                            }
+                            yield return child;
                         }
                     }
 
